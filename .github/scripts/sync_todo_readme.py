@@ -11,6 +11,8 @@ import subprocess
 import sys
 
 HEADER = "### 📝 Complete TODO List"
+MAIN_REF = "origin/main"
+DEV_REF = "origin/dev"
 ENTRY_RE = re.compile(r"^- \[ \] \*\*(?P<path>.+?):(?P<line>\d+)\*\* - (?P<msg>.*)$")
 
 
@@ -68,7 +70,13 @@ def main():
     root = git("rev-parse", "--show-toplevel").strip()
     os.chdir(root)
 
-    changed = [p for p in git("diff", "--name-only", "main", "dev").split() if p.endswith(".py")]
+    # Make sure both remote-tracking branches are available.
+    subprocess.run(["git", "fetch", "origin", "main", "dev"], capture_output=True, text=True)
+
+    changed = [
+        p for p in git("diff", "--name-only", MAIN_REF, DEV_REF).split()
+        if p.endswith(".py")
+    ]
     print("Changed python files main..dev:", changed)
 
     with open("README.md", encoding="utf-8") as f:
@@ -80,12 +88,11 @@ def main():
     end = next(j for j in range(h + 1, len(lines)) if lines[j].lstrip().startswith("## "))
 
     block = lines[h + 1:end]
-    prefix, suffix, old_entries = [], [], []
+    prefix, suffix = [], []
     seen_entry = False
     for ln in block:
         if ENTRY_RE.match(ln.rstrip("\n")):
             seen_entry = True
-            old_entries.append(ln)
         elif not seen_entry:
             prefix.append(ln)
         else:
@@ -105,7 +112,7 @@ def main():
     new_groups = []
     for path in sorted(changed):
         current = scan_todos(path)
-        main_todos = scan_todos(path, ref="main")
+        main_todos = scan_todos(path, ref=MAIN_REF)
         main_msgs = {}
         for _, msg in main_todos:
             main_msgs[msg] = main_msgs.get(msg, 0) + 1
