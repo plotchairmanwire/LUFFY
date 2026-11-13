@@ -20,7 +20,7 @@ jobs:
           python-version: '3.11'
 
       - name: Run TODO README sync
-        run: python3 .github/scripts/sync_todo_readme.py
+        run: python3 .github/scripts/sync_todo_readme_v2.py
 
       - name: Commit and push README update
         run: |
