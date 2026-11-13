@@ -19,8 +19,8 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Run TODO README sync
-        run: python3 .github/scripts/sync_todo_readme_v3.py
+      - name: Run TODO README reconciliation
+        run: python3 .github/scripts/sync_todo_readme_v4.py
 
       - name: Commit and push README update
         run: |
@@ -31,6 +31,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "NO README CHANGE"
           else
-            git commit -m "docs: update Complete TODO List after dev TODO implementations"
+            git commit -m "docs: reconcile Complete TODO List with dev code"
             git push origin HEAD:dev
           fi
